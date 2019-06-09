@@ -58,29 +58,34 @@ def train(epoch):
 
 def test(epoch):
     model.eval()
-    test_loss = 0
-    for i, (data, _) in enumerate(test_loader):
-        data = Variable(data, volatile=True)
-        final, residual_img, upscaled_image, com_img, orig_im = model(data.cuda())
-        test_loss += loss_function(final, residual_img, upscaled_image, com_img, orig_im).data[0]
-        if epoch == EPOCHS and i == 0:
-            #             save_image(final.data[0],'reconstruction_final',nrow=8)
-            #             save_image(com_img.data[0],'com_img',nrow=8)
-            n = min(data.size(0), 6)
-            print("saving the image " + str(n))
-            comparison = torch.cat([data[:n],
-                                    final[:n].cpu()])
-            comparison = comparison.cpu()
-            #             print(comparison.data)
-            save_image(com_img[:n].data,
-                       'compressed_' + str(epoch) + '.png', nrow=n)
-            save_image(comparison.data,
-                       'reconstruction_' + str(epoch) + '.png', nrow=n)
+    with torch.no_grad():
+        test_loss = 0
+        for i, (data, _) in enumerate(test_loader):
+            data = Variable(data, volatile=True)
+            final, residual_img, upscaled_image, com_img, orig_im = model(data.cuda())
+            test_loss += loss_function(final, residual_img, upscaled_image, com_img, orig_im).data.item()
+            if epoch == EPOCHS and i == 0:
+                #             save_image(final.data[0],'reconstruction_final',nrow=8)
+                #             save_image(com_img.data[0],'com_img',nrow=8)
+                n = min(data.size(0), 6)
+                print("saving the image " + str(n))
+                comparison = torch.cat([data[:n],
+                                        final[:n].cpu()])
+                comparison = comparison.cpu()
+                #             print(comparison.data)
+                save_image(com_img[:n].data,
+                           'compressed_' + str(epoch) + '.png', nrow=n)
+                save_image(comparison.data,
+                           'reconstruction_' + str(epoch) + '.png', nrow=n)
 
-    test_loss /= len(test_loader.dataset)
-    print('====> Test set loss: {:.4f}'.format(test_loss))
+        test_loss /= len(test_loader.dataset)
+        print('====> Test set loss: {:.4f}'.format(test_loss))
 
 
 for epoch in range(1, EPOCHS+1):
     train(epoch)
     test(epoch)
+
+# Save the model checkpoint
+# torch.save(model.state_dict(), 'model.ckpt')
+torch.save(model.state_dict(), './model.pth')
