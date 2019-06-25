@@ -22,12 +22,11 @@ img_transform = transforms.Compose([
 
 trainset = datasets.STL10(root='./data', split='train',download=True, transform=img_transform)
 
-train_loader = torch.utils.data.DataLoader(trainset, batch_size=16,
-                                          shuffle=True, num_workers=2)
+train_loader = torch.utils.data.DataLoader(trainset, batch_size=16, shuffle=True, num_workers=2)
 
 testset = datasets.STL10(root='./data', split='test',download=True, transform=img_transform)
 
-test_loader = torch.utils.data.DataLoader(testset, batch_size=16,shuffle=False, num_workers=2)
+test_loader = torch.utils.data.DataLoader(testset, batch_size=16, shuffle=False, num_workers=2)
 
 model = End_to_End()
 model.to(device)
